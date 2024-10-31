@@ -51,6 +51,7 @@
     grid-area: deck;
     height: 100%;
     width: 100%;
+    position: relative;
 }
 
 .deckitem {
@@ -59,6 +60,24 @@
     background-color: white;
     border: black solid 2px;
     border-radius: 1rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center;
+}
+
+.deckitem2 {
+    height: 12rem;
+    width: 6rem;
+    background-color: white;
+    border: black solid 2px;
+    border-radius: 1rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center;
+    transform: translate(-50%, -50%) rotate(3deg);
+    rotate: -1deg;
 }
 
 .dealer {

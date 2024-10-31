@@ -1,3 +1,66 @@
+let divDeck = document.getElementsByClassName("deck")[0]
+
+
+/**
+    * Returns a random integer between min and max
+    * @param {Number} min 
+    * @param {Number} max 
+    *
+    */
+function getRandomInt(min, max) {
+    const minCeiled = Math.ceil(min);
+    const maxFloored = Math.floor(max);
+    return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+}
+
+function removeChildren(node) {
+    while (node.firstChild) {
+        node.removeChild(node.lastChild)
+    }
+}
+
+
+function createVisualDeck(div, deck) {
+    for (const card of deck) {
+        let degree = getRandomInt(0, 5) * (Math.random() < 0.5 ? 1 : -1)
+        let offsetX = getRandomInt(48, 52) * -1
+        let offsetY = getRandomInt(42, 58) * -1
+        let newElement = document.createElement("div")
+        newElement.classList.add("deckitem")
+        newElement.style.transform = `translate(${offsetX}%, ${offsetY}%) rotate(${degree}deg)`
+        divDeck.appendChild(newElement)
+    }
+}
+
+function createVisualCard(adder, digCard) {
+    const suitSymbols = ["♠", "♥", "♦", "♣"]
+    const card = document.createElement("div")
+    card.classList.add("card")
+    card.innerText = `${Object.values(digCard)[0]}`
+
+    adder.appendChild(card)
+}
+
+function drawDealer() {
+    const Divdealer = document.getElementsByClassName("dealer")[0]
+
+    // function draw(drawTo) {
+    //     // pushes the popped item
+    //     return drawTo.push(deck.pop())
+    // }
+    createVisualCard(Divdealer, draw(dealer))
+}
+
+function drawPlayer() {
+    const Divplayer = document.getElementsByClassName("player")[0]
+
+    // function draw(drawTo) {
+    //     // pushes the popped item
+    //     return drawTo.push(deck.pop())
+    // }
+    createVisualCard(Divplayer, draw(hand))
+}
+
 const originalDeck = []
 const suits = ["HEARTS", "SPADES", "DIAMONDS", "CLUBS"]
 // console.log("Start Deck loop")
@@ -14,6 +77,8 @@ for (let suit of suits) { // for each suit
 // console.log(originalDeck)
 
 let deck = originalDeck.slice()
+
+createVisualDeck(divDeck, deck)
 
 let hand = []
 let dealer = []
@@ -35,7 +100,9 @@ function shuffle(array) {
 
 function draw(drawTo) {
     // pushes the popped item
-    return drawTo.push(deck.pop())
+    card = deck.pop()
+    drawTo.push()
+    return card
 }
 
 function sum(array) {
@@ -64,6 +131,8 @@ function sum(array) {
 }
 
 function reset() {
+    removeChildren(document.getElementsByClassName("player")[0])
+    removeChildren(document.getElementsByClassName("dealer")[0])
     deck = originalDeck.slice()
     shuffle(deck)
     hand = []
@@ -73,13 +142,29 @@ function reset() {
     console.clear()
 }
 
-function stayOrHit() {
-    let answer = prompt("Hit or Stay? y/n")
-    if (answer === "y") {
+let hitstay;
+
+
+function hit() {
+    hitstay(true)
+}
+
+function stand() {
+    hitstay(false)
+}
+
+
+async function stayOrHit() {
+    let res
+    let promise = new Promise((resolve) => hitstay = resolve)
+    console.log("Waiting")
+    await promise.then((result) => { res = result });
+    if (res === true) {
         draw(hand)
     } else {
         return false
     }
+    console.log("Finished waiting")
 }
 
 function checkBust(arr) {
@@ -124,37 +209,44 @@ console.log(hand)
 // is dealer above 17? yes: dealer stands, no: dealer hits
 
 
-while (game) {
-    // Dealer and player receive 2 cards
-    draw(hand)
-    draw(hand)
-    draw(dealer)
-    draw(dealer)
-    console.log("Your Hand: " + sum(hand))
-    console.log("Dealers Hand: " + sum(dealer))
-    stayOrHit() // Does Player want to stand or hit?
-    // is player above 21?
-    if (checkBust(hand)) {
-        console.log("You Lose! you busted")
-        continueGame()
-        continue
+async function gameStart() {
+    while (game) {
+        console.log("Started")
+        // Dealer and player receive 2 cards
+        drawPlayer()
+        drawPlayer()
+        drawDealer()
+        drawDealer()
+        console.log("Your Hand: " + sum(hand))
+        console.log("Dealers Hand: " + sum(dealer))
+        await stayOrHit() // Does Player want to stand or hit?
+        // is player above 21?
+        if (checkBust(hand)) {
+            console.log("You Lose! you busted")
+            //continueGame()
+            continue
+        }
+        // if dealer is under 17 draw one more
+        if (sum(dealer) < 17) {
+            draw(dealer)
+        }
+        // is dealer above 21?
+        if (checkBust(dealer)) {
+            console.log("You Win! dealer busted")
+            //continueGame()
+            continue
+        }
+        console.log("Your Hand: " + sum(hand))
+        console.log("Dealers Hand: " + sum(dealer))
+        if (winCheck()) {
+            console.log("You Win!!")
+        } else {
+            console.log("You Lost!!")
+        }
+        //continueGame()
+        reset()
+
     }
-    // if dealer is under 17 draw one more
-    if (sum(dealer) < 17) {
-        draw(dealer)
-    }
-    // is dealer above 21?
-    if (checkBust(dealer)) {
-        console.log("You Win! dealer busted")
-        continueGame()
-        continue
-    }
-    console.log("Your Hand: " + sum(hand))
-    console.log("Dealers Hand: " + sum(dealer))
-    if (winCheck()) {
-        console.log("You Win!!")
-    } else {
-        console.log("You Lost!!")
-    }
-    continueGame()
 }
+
+gameStart()
